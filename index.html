@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>이름 궁합 💕</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink: #ff6b9d;
+      --purple: #c77dff;
+      --bg: #fff0f6;
+      --card: #ffffff;
+      --text: #3d1a47;
+      --muted: #a07ab5;
+      --border: #f0c0d8;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #fff0f6 0%, #f0e6ff 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+      color: var(--text);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(199, 125, 255, 0.15);
+      border: 1px solid var(--border);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .heart-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .input-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"] {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 1rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      background: #fafafa;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--pink);
+      background: #fff;
+    }
+
+    .vs {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--purple);
+      flex-shrink: 0;
+      text-align: center;
+      width: 28px;
+    }
+
+    .btn-calc {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn-calc:hover { opacity: 0.92; }
+    .btn-calc:active { transform: scale(0.98); }
+
+    /* ── Result Section ── */
+    #result-section {
+      width: 100%;
+      max-width: 420px;
+      margin-top: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .result-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(199, 125, 255, 0.15);
+      border: 1px solid var(--border);
+    }
+
+    .result-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Process Visualization ── */
+    .process-wrapper {
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .process-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 6px;
+      min-width: max-content;
+    }
+
+    .process-row.name-row {
+      margin-bottom: 2px;
+    }
+
+    .char-box {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 8px;
+      margin: 1px;
+    }
+
+    .char-box.name1 {
+      background: #ffe0f0;
+      color: var(--pink);
+    }
+
+    .char-box.name2 {
+      background: #ede0ff;
+      color: var(--purple);
+    }
+
+    .char-box.num {
+      background: #f8f8f8;
+      color: var(--text);
+      font-size: 0.85rem;
+      border: 1.5px solid #eee;
+    }
+
+    .char-box.num.highlight {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .char-box.final {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 800;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(255, 107, 157, 0.4);
+    }
+
+    /* ── Percentage Circle ── */
+    .percent-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .percent-circle {
+      position: relative;
+      width: 140px;
+      height: 140px;
+    }
+
+    .percent-circle svg {
+      transform: rotate(-90deg);
+    }
+
+    .percent-circle .bg-circle {
+      fill: none;
+      stroke: #f0e0f8;
+      stroke-width: 12;
+    }
+
+    .percent-circle .fg-circle {
+      fill: none;
+      stroke: url(#grad);
+      stroke-width: 12;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .percent-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .percent-num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .percent-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .compat-message {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .compat-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ── Share Button ── */
+    .btn-share {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 14px;
+      background: #0088cc;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .btn-share:hover { opacity: 0.88; }
+
+    .btn-share svg {
+      width: 20px;
+      height: 20px;
+      fill: #fff;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1.5px solid var(--border);
+      margin: 4px 0;
+    }
+
+    .error-msg {
+      color: var(--pink);
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-top: 6px;
+      display: none;
+    }
+
+    /* Hearts animation */
+    @keyframes floatHeart {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-60px) scale(1.4); opacity: 0; }
+    }
+
+    .floating-heart {
+      position: fixed;
+      pointer-events: none;
+      animation: floatHeart 1s ease-out forwards;
+      font-size: 1.5rem;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+<h1>이름 궁합 💕</h1>
+<p class="subtitle">두 사람의 이름으로 애정도를 확인해보세요</p>
+
+<div class="card">
+  <div class="input-row">
+    <div class="input-group">
+      <label>첫 번째 이름</label>
+      <input type="text" id="name1" placeholder="이름 입력" maxlength="5" />
+    </div>
+    <span class="vs">💞</span>
+    <div class="input-group">
+      <label>두 번째 이름</label>
+      <input type="text" id="name2" placeholder="이름 입력" maxlength="5" />
+    </div>
+  </div>
+  <p class="error-msg" id="error-msg">⚠ 두 이름 모두 한글로 입력해주세요</p>
+  <button class="btn-calc" onclick="calculate()">궁합 보기 ✨</button>
+</div>
+
+<div id="result-section">
+
+  <!-- Process -->
+  <div class="result-card">
+    <p class="result-title">획수 계산 과정</p>
+    <div class="process-wrapper">
+      <div id="process-names" class="process-row name-row"></div>
+      <div id="process-steps"></div>
+    </div>
+  </div>
+
+  <!-- Percent -->
+  <div class="result-card">
+    <div class="percent-wrap">
+      <div class="percent-circle">
+        <svg viewBox="0 0 120 120" width="140" height="140">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#ff6b9d"/>
+              <stop offset="100%" style="stop-color:#c77dff"/>
+            </linearGradient>
+          </defs>
+          <circle class="bg-circle" cx="60" cy="60" r="50"/>
+          <circle class="fg-circle" id="fg-circle" cx="60" cy="60" r="50"
+            stroke-dasharray="314.16"
+            stroke-dashoffset="314.16"/>
+        </svg>
+        <div class="percent-text">
+          <div class="percent-num" id="percent-num">0%</div>
+          <div class="percent-label">애정도</div>
+        </div>
+      </div>
+      <p class="compat-message" id="compat-message"></p>
+      <p class="compat-sub" id="compat-sub"></p>
+    </div>
+  </div>
+
+  <!-- Share -->
+  <div class="result-card">
+    <button class="btn-share" onclick="shareToTelegram()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/>
+      </svg>
+      텔레그램으로 공유하기
+    </button>
+  </div>
+
+</div>
+
+<script>
+// ── Hangul stroke count tables ──
+const CHOSEONG_STROKES  = [2,4,2,3,6,5,4,4,8,2,4,1,3,6,4,3,4,4,3];
+// ㄱㄲㄴㄷㄸㄹㅁㅂㅹㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ
+const JUNGSEONG_STROKES = [2,3,3,4,2,3,3,4,2,4,5,3,3,2,4,5,3,3,1,2,1];
+// ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ
+const JONGSEONG_STROKES = [0,2,4,4,2,5,5,3,5,7,9,9,7,9,9,8,4,4,6,2,4,1,3,4,3,4,4,3];
+// (없음)ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ
+
+function getHangulStrokes(char) {
+  const code = char.charCodeAt(0);
+  if (code < 0xAC00 || code > 0xD7A3) return null; // not hangul syllable
+  const offset = code - 0xAC00;
+  const jong = offset % 28;
+  const jung = Math.floor(offset / 28) % 21;
+  const cho  = Math.floor(offset / 28 / 21);
+  return CHOSEONG_STROKES[cho] + JUNGSEONG_STROKES[jung] + JONGSEONG_STROKES[jong];
+}
+
+function isHangul(str) {
+  return [...str].every(c => {
+    const code = c.charCodeAt(0);
+    return code >= 0xAC00 && code <= 0xD7A3;
+  });
+}
+
+function reduceStep(arr) {
+  const next = [];
+  for (let i = 0; i < arr.length - 1; i++) {
+    const s = arr[i] + arr[i+1];
+    if (s >= 10) {
+      next.push(Math.floor(s / 10), s % 10);
+    } else {
+      next.push(s);
+    }
+  }
+  return next;
+}
+
+function runProcess(strokes) {
+  const steps = [strokes.slice()];
+  let cur = strokes.slice();
+  let maxIter = 200;
+  while (cur.length > 2 && maxIter-- > 0) {
+    cur = reduceStep(cur);
+    steps.push(cur.slice());
+  }
+  return steps;
+}
+
+function compatInfo(pct) {
+  if (pct >= 90) return { msg: "운명적인 인연 💘", sub: "두 사람은 태어날 때부터 정해진 인연이에요.\n함께라면 무엇이든 할 수 있어요!" };
+  if (pct >= 80) return { msg: "최고의 궁합 💖", sub: "서로를 깊이 이해하고 아끼는 관계예요.\n함께하는 시간이 늘어날수록 더 빛나요." };
+  if (pct >= 70) return { msg: "좋은 궁합 💗", sub: "서로에게 잘 맞는 편이에요.\n조금만 더 표현한다면 금상첨화!" };
+  if (pct >= 60) return { msg: "괜찮은 궁합 💓", sub: "서로 노력하면 더욱 좋아질 수 있어요.\n대화를 자주 나눠보세요." };
+  if (pct >= 50) return { msg: "평범한 궁합 💛", sub: "특별히 나쁘지도 좋지도 않아요.\n함께하는 추억을 쌓아보세요." };
+  if (pct >= 30) return { msg: "노력이 필요해요 🩶", sub: "서로를 이해하는 데 시간이 걸릴 수 있어요.\n꾸준한 관심과 배려가 중요해요." };
+  return { msg: "반대가 매력? 🖤", sub: "첫인상은 어색할 수 있지만,\n오히려 새로운 자극이 될 수도 있어요!" };
+}
+
+// State for share
+let lastResult = null;
+
+function calculate() {
+  const n1 = document.getElementById('name1').value.trim();
+  const n2 = document.getElementById('name2').value.trim();
+  const errEl = document.getElementById('error-msg');
+
+  if (!n1 || !n2 || !isHangul(n1) || !isHangul(n2)) {
+    errEl.style.display = 'block';
+    document.getElementById('result-section').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const combined = [...n1, ...n2];
+  const strokes = combined.map(getHangulStrokes);
+
+  // Run reduction
+  const steps = runProcess(strokes);
+  const finalArr = steps[steps.length - 1];
+  const pct = finalArr.length === 2 ? finalArr[0] * 10 + finalArr[1] : parseInt(finalArr.join('').slice(-2));
+
+  lastResult = { n1, n2, pct };
+
+  // Render name row
+  const namesEl = document.getElementById('process-names');
+  namesEl.innerHTML = '';
+  [...n1].forEach(c => {
+    const box = document.createElement('div');
+    box.className = 'char-box name1';
+    box.textContent = c;
+    namesEl.appendChild(box);
+  });
+  [...n2].forEach(c => {
+    const box = document.createElement('div');
+    box.className = 'char-box name2';
+    box.textContent = c;
+    namesEl.appendChild(box);
+  });
+
+  // Render steps
+  const stepsEl = document.getElementById('process-steps');
+  stepsEl.innerHTML = '';
+  steps.forEach((row, si) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'process-row';
+    const isFinal = si === steps.length - 1;
+    row.forEach(n => {
+      const box = document.createElement('div');
+      box.className = isFinal ? 'char-box final' : 'char-box num';
+      box.textContent = n;
+      rowEl.appendChild(box);
+    });
+    stepsEl.appendChild(rowEl);
+  });
+
+  // Animate circle
+  const circumference = 314.16;
+  const offset = circumference * (1 - pct / 100);
+  const circle = document.getElementById('fg-circle');
+  circle.style.strokeDashoffset = circumference; // reset
+  setTimeout(() => { circle.style.strokeDashoffset = offset; }, 50);
+
+  document.getElementById('percent-num').textContent = pct + '%';
+
+  const info = compatInfo(pct);
+  document.getElementById('compat-message').textContent = info.msg;
+  document.getElementById('compat-sub').textContent = info.sub;
+
+  const sec = document.getElementById('result-section');
+  sec.style.display = 'flex';
+  sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Floating hearts
+  spawnHearts();
+}
+
+function spawnHearts() {
+  const hearts = ['💕','💖','💗','💓','❤️','🩷'];
+  for (let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'floating-heart';
+      el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+      el.style.left = Math.random() * 80 + 10 + 'vw';
+      el.style.top = Math.random() * 40 + 40 + 'vh';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1000);
+    }, i * 120);
+  }
+}
+
+function shareToTelegram() {
+  if (!lastResult) return;
+  const { n1, n2, pct } = lastResult;
+  const info = compatInfo(pct);
+  const text = `💕 이름 궁합 결과!\n\n${n1} ❤️ ${n2}\n\n애정도: ${pct}%\n${info.msg}\n\n나도 해보기 👇`;
+  const url = window.location.href.split('?')[0];
+  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+  window.open(shareUrl, '_blank');
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') calculate();
+});
+</script>
+</body>
+</html>
