@@ -442,12 +442,7 @@ function isHangul(str) {
 function reduceStep(arr) {
   const next = [];
   for (let i = 0; i < arr.length - 1; i++) {
-    const s = arr[i] + arr[i+1];
-    if (s >= 10) {
-      next.push(Math.floor(s / 10), s % 10);
-    } else {
-      next.push(s);
-    }
+    next.push((arr[i] + arr[i + 1]) % 10);
   }
   return next;
 }
@@ -455,8 +450,8 @@ function reduceStep(arr) {
 function runProcess(strokes) {
   const steps = [strokes.slice()];
   let cur = strokes.slice();
-  let maxIter = 200;
-  while (cur.length > 2 && maxIter-- > 0) {
+  // 배열은 매 스텝마다 정확히 1개씩 줄어들므로 항상 수렴
+  while (cur.length > 2) {
     cur = reduceStep(cur);
     steps.push(cur.slice());
   }
