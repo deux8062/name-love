@@ -483,7 +483,16 @@ function calculate() {
   }
   errEl.style.display = 'none';
 
-  const combined = [...n1, ...n2];
+  // 같은 자리끼리 교차: 홍길동+이순신 → 홍이길순동신
+  const arr1 = [...n1];
+  const arr2 = [...n2];
+  const maxLen = Math.max(arr1.length, arr2.length);
+  const combined = [];
+  const combinedMeta = []; // 어느 이름인지 추적 (1 or 2)
+  for (let i = 0; i < maxLen; i++) {
+    if (i < arr1.length) { combined.push(arr1[i]); combinedMeta.push(1); }
+    if (i < arr2.length) { combined.push(arr2[i]); combinedMeta.push(2); }
+  }
   const strokes = combined.map(getHangulStrokes);
 
   // Run reduction
@@ -493,18 +502,12 @@ function calculate() {
 
   lastResult = { n1, n2, pct };
 
-  // Render name row
+  // Render name row (교차 순서로)
   const namesEl = document.getElementById('process-names');
   namesEl.innerHTML = '';
-  [...n1].forEach(c => {
+  combined.forEach((c, i) => {
     const box = document.createElement('div');
-    box.className = 'char-box name1';
-    box.textContent = c;
-    namesEl.appendChild(box);
-  });
-  [...n2].forEach(c => {
-    const box = document.createElement('div');
-    box.className = 'char-box name2';
+    box.className = combinedMeta[i] === 1 ? 'char-box name1' : 'char-box name2';
     box.textContent = c;
     namesEl.appendChild(box);
   });
